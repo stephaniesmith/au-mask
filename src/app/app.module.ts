@@ -5,10 +5,12 @@ import {HttpModule} from '@angular/http';
 
 import {AppComponent} from './app.component';
 import {AuMaskModule} from "./au-mask/au-mask.module";
+import { AuMaskDirective } from './au-mask/au-mask.directive';
 
 @NgModule({
     declarations: [
-        AppComponent
+        AppComponent,
+        AuMaskDirective
     ],
     imports: [
         BrowserModule,
