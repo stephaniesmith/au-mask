@@ -1,5 +1,5 @@
-import { Directive, Input, OnInit, ElementRef } from '@angular/core';
-import { SPECIAL_CHARACTERS } from './mask.utils';
+import { Directive, Input, OnInit, ElementRef, HostListener } from '@angular/core';
+import { SPECIAL_CHARACTERS, TAB, overWriteCharAtPosition } from './mask.utils';
 
 @Directive({
   selector: '[au-mask]'
@@ -15,9 +15,19 @@ export class AuMaskDirective implements OnInit {
   }
 
   ngOnInit() {
-
     this.input.value = this.buildPlaceHolder();
+  }
 
+  @HostListener('keydown', ['$event', '$event.keyCode'])
+  onkeydown($event: KeyboardEvent, keyCode) {
+    if (keyCode !== TAB) {
+      $event.preventDefault();
+    }
+
+    const key = String.fromCharCode(keyCode);
+    const cursorPos = this.input.selectionStart;
+
+    overWriteCharAtPosition(this.input, cursorPos, key);
   }
 
   buildPlaceHolder() {
