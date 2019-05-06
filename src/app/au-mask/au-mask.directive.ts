@@ -1,5 +1,5 @@
 import { Directive, Input, OnInit, ElementRef, HostListener } from '@angular/core';
-import { SPECIAL_CHARACTERS, TAB, overWriteCharAtPosition, LEFT_ARROW, RIGHT_ARROW } from './mask.utils';
+import { SPECIAL_CHARACTERS, TAB, overWriteCharAtPosition, LEFT_ARROW, RIGHT_ARROW, BACKSPACE, DELETE } from './mask.utils';
 
 import * as findLastIndex from 'lodash.findlastindex';
 import { maskDigitValidators, neverValidator } from './digit_validators';
@@ -32,15 +32,16 @@ export class AuMaskDirective implements OnInit {
 
     switch (keyCode) {
       case LEFT_ARROW:
-        const valueBeforeCursor = this.input.value.slice(0, cursorPos).split('');
-        const previousPos = findLastIndex(valueBeforeCursor, char => !SPECIAL_CHARACTERS.includes(char));
-
-        if (previousPos >= 0) {
-          this.input.setSelectionRange(previousPos, previousPos);
-        }
+      this.handleLeftArrow(cursorPos);
         return;
       case RIGHT_ARROW:
         this.handleRightArrow(cursorPos);
+        return;
+      case BACKSPACE:
+        this.handleBackspace(cursorPos);
+        return;
+      case DELETE:
+        this.handleDelete(cursorPos);
         return;
     }
 
@@ -54,6 +55,19 @@ export class AuMaskDirective implements OnInit {
 
   }
 
+  calculatePreviousCursorPos(cursorPos) {
+    const valueBeforeCursor = this.input.value.slice(0, cursorPos).split('');
+    return findLastIndex(valueBeforeCursor, char => !SPECIAL_CHARACTERS.includes(char));
+  }
+
+  handleLeftArrow(cursorPos) {
+    const previousPos = this.calculatePreviousCursorPos(cursorPos);
+
+    if (previousPos >= 0) {
+      this.input.setSelectionRange(previousPos, previousPos);
+    }
+  }
+
   handleRightArrow(cursorPos) {
     const valueAfterCursor = this.input.value.slice(cursorPos + 1).split('');
     const nextPos = valueAfterCursor.findIndex(char => !SPECIAL_CHARACTERS.includes(char));
@@ -62,6 +76,20 @@ export class AuMaskDirective implements OnInit {
       const newCursorPos = cursorPos + nextPos + 1;
       this.input.setSelectionRange(newCursorPos, newCursorPos);
     }
+  }
+
+  handleBackspace(cursorPos) {
+    const previousPos = this.calculatePreviousCursorPos(cursorPos);
+
+    if (previousPos >= 0) {
+      overWriteCharAtPosition(this.input, previousPos, '_');
+      this.input.setSelectionRange(previousPos, previousPos);
+    }
+  }
+
+  handleDelete(cursorPos) {
+    overWriteCharAtPosition(this.input, cursorPos, '_');
+    this.input.setSelectionRange(cursorPos, cursorPos);
   }
 
   buildPlaceHolder() {
