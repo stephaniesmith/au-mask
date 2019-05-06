@@ -2,6 +2,7 @@ import { Directive, Input, OnInit, ElementRef, HostListener } from '@angular/cor
 import { SPECIAL_CHARACTERS, TAB, overWriteCharAtPosition, LEFT_ARROW, RIGHT_ARROW } from './mask.utils';
 
 import * as findLastIndex from 'lodash.findlastindex';
+import { maskDigitValidators } from './digit_validators';
 
 @Directive({
   selector: '[au-mask]'
@@ -43,8 +44,14 @@ export class AuMaskDirective implements OnInit {
         return;
     }
 
-    overWriteCharAtPosition(this.input, cursorPos, key);
-    this.handleRightArrow(cursorPos);
+    const maskDigit = this.mask.charAt(cursorPos);
+    const digitValidator = maskDigitValidators[maskDigit];
+
+    if (digitValidator(key)) {
+      overWriteCharAtPosition(this.input, cursorPos, key);
+      this.handleRightArrow(cursorPos);
+    }
+
   }
 
   handleRightArrow(cursorPos) {
